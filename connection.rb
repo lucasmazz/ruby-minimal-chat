@@ -11,16 +11,16 @@ module Connection
             if block_given?
                 yield
             else
-                Thread.new { loop { receive{ |data| puts(data) } } }
-                loop { send(gets) }
+                Thread.new { loop { read{ |data| puts(data) } } }
+                loop { write(gets) }
             end
         end
 
-        def send(data)
+        def write(data)
             @conn.puts(data)
         end
 
-        def receive
+        def read
             yield @conn.recv 1024
         end
 
