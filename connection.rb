@@ -5,13 +5,23 @@ require 'socket'
 module Connection
 
     class Connection
+        attr_accessor :nickname
+
         def initialize
-            Thread.new { loop { puts @conn.recv 1024 } }
-            loop { @conn.puts(gets) }
+            if block_given?
+                yield
+            else
+                Thread.new { loop { receive{ |data| puts(data) } } }
+                loop { send(gets) }
+            end
         end
 
-        def send(text)
-            @conn.puts text
+        def send(data)
+            @conn.puts(data)
+        end
+
+        def receive
+            yield @conn.recv 1024
         end
 
         def close
@@ -26,12 +36,8 @@ module Connection
         def initialize(ip="127.0.0.1", port=5555)
             @ip = ip
             @port = port
-
             server = TCPServer.open(@ip, @port)
-            puts "Server is listening on #{@ip}:#{@port}, waiting for connection."
             @conn = server.accept
-            puts "A connection has been established."
-            puts "---------------------------------"
 
             super()
         end
@@ -43,10 +49,7 @@ module Connection
         def initialize(ip="127.0.0.1", port=5555)
             @ip = ip
             @port = port
-
             @conn = TCPSocket.new(@ip, @port)
-            puts "Successfully connected."
-            puts "---------------------------------"
 
             super()
         end
