@@ -7,21 +7,21 @@ module Connection
     class Connection
         attr_accessor :nickname
 
-        def initialize
-            if block_given?
-                yield self
-            else
-                Thread.new { loop { read{ |data| puts(data) } } }
-                loop { write(gets) }
-            end
-        end
+        # def initialize
+            # if block_given?
+            #     yield self
+            # else
+            #     Thread.new { loop { read{ |data| puts(data) } } }
+            #     loop { write(gets) }
+            # end
+        # end
 
         def write(data)
-            @conn.puts(data)
+            @conn.puts data
         end
 
         def read
-            yield @conn.recv 1024
+            @conn.recv 1024
         end
 
         def close
@@ -38,8 +38,6 @@ module Connection
             @port = port
             server = TCPServer.open(@ip, @port)
             @conn = server.accept
-
-            super()
         end
     end
 
@@ -50,10 +48,7 @@ module Connection
             @ip = ip
             @port = port
             @conn = TCPSocket.new(@ip, @port)
-
-            super()
         end
-
     end
 
 end

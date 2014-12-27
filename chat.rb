@@ -5,55 +5,72 @@ require './connection'
 require './ui'
 
 
+class Chat
 
+    def initialize connection=nil
+        @connection = connection
+        @messages = Array.new()
 
+        # gets the nickname
+        UI::Dialog.new("What will be your nickname?", "Nickname: ") do |nickname|
+            @nickname = nickname
+        end
 
-def main(conn)
-    nickname = ""
-
-    UI::Dialog.new("What will be your nickname?", "Nickname: "){|answer| nickname = answer}
-
-    messages = []
-    window = nil
-
-    def write(window, messages)
-            total_lines = window.lines-2
-            first_line = (messages.length-total_lines) > 0 ? (messages.length-total_lines) : 0
-            window.setpos(0, 0)
-
-            messages[(first_line)..(messages.length)].each do |msg|
-                window.addstr( msg + "\n" )
-            end
-
-            window.setpos(Curses.lines-2,0)
-            window.addstr("-"*Curses.cols)
-            window.setpos(Curses.lines-1,0)
-
-            window.refresh
+        @window = UI::Window.new()
+        @window.refresh
     end
 
-    Thread.new do
-        if !(window.nil?)
-            loop do
-                conn.read do |data|
-                    messages << ("#{Time.now.strftime('%I:%M')} " << data )
-                    write window, messages
-                end
-            end
+    def update
+
+        total_lines = @window.lines-2
+        first_line = (@messages.length-total_lines) > 0 ? (@messages.length-total_lines) : 0
+
+        @window.setpos(0, 0)
+
+        cont = 0
+
+        @messages[(first_line)..(@messages.length)].each do |msg|
+            @window.setpos(cont, 0)
+            @window.addstr(msg)
+            cont+=1
+        end
+
+        # draws the input division
+        @window.setpos(@window.lines-2,0)
+        @window.addstr("-"*@window.cols)
+        @window.setpos(@window.lines-1,0)
+
+        @window.refresh
+    end
+
+    def write
+        # clears the input text
+        @window.clear
+
+        # updates the screen
+        update
+
+        # gets the message and send
+        input = @window.getstr.chomp.strip
+
+        if !input.empty?
+            data = "#{@nickname}: "<< input
+            @messages << ("#{Time.now.strftime('%I:%M')} " << data)
+            @connection.write data
         end
     end
 
-    loop do
-        UI::Window.new() do |win|
-            window = win
-            write window, messages
+    def read
+        # reads the message
+        data = @connection.read
 
-            input = "#{nickname}: "<< win.getstr
-            messages << ("#{Time.now.strftime('%I:%M')} " << input)
-            window.addstr(input)
-
-            conn.write input
+        if !data.chomp.strip.empty?
+            @messages << ("#{Time.now.strftime('%I:%M')} " << data)
+            update
         end
+    end
+
+    def close
     end
 
 end
@@ -97,9 +114,20 @@ if __FILE__ == $0
 
     # verifies the type of connection
     if options[:mod] == "server"
-        Connection::Server.new(options[:ip], options[:port].to_i) {|conn| main(conn) }
+        conn = Connection::Server.new(options[:ip], options[:port].to_i)
     elsif options[:mod] == "client"
-        Connection::Client.new(options[:ip], options[:port].to_i) {|conn| main(conn) }
+        conn = Connection::Client.new(options[:ip], options[:port].to_i)
     end
 
+    chat = Chat.new conn
+
+    Thread.new do
+        loop do
+            chat.read
+        end
+    end
+
+    loop do
+        chat.write
+    end
 end

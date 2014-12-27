@@ -15,8 +15,6 @@ module UI
 			@cols = Curses.cols
 
 			super(@lines, @cols, 0, 0)
-
-			yield self
 		end
 
 	end
