@@ -16,7 +16,7 @@ def main(conn)
     messages = []
     window = nil
 
-    def write window, messages
+    def write(window, messages)
             total_lines = window.lines-2
             first_line = (messages.length-total_lines) > 0 ? (messages.length-total_lines) : 0
             window.setpos(0, 0)
@@ -25,9 +25,9 @@ def main(conn)
                 window.addstr( msg + "\n" )
             end
 
-            window.setpos(Curses.lines-2,0)
-            window.addstr("-"*Curses.cols)
-            window.setpos(Curses.lines-1,0)
+            # window.setpos(Curses.lines-2,0)
+            # window.addstr("-"*Curses.cols)
+            # window.setpos(Curses.lines-1,0)
 
             window.refresh
     end
@@ -35,8 +35,10 @@ def main(conn)
     Thread.new do
         if !(window.nil?)
             loop do
-                messages << ("#{Time.now.strftime('%I:%M')} " << conn.read)
-                write window, messages
+                conn.read do |data|
+                    messages << ("#{Time.now.strftime('%I:%M')} " << data )
+                    write window, messages
+                end
             end
         end
     end
@@ -45,9 +47,9 @@ def main(conn)
         UI::Window.new() do |win|
             window = win
             write window, messages
-            input = ("#{Time.now.strftime('%I:%M')} #{nickname}: " << win.getstr)
-            messages << input
 
+            input = "#{nickname}: "<< win.getstr
+            messages << ("#{Time.now.strftime('%I:%M')} " << input)
             window.addstr(input)
 
             conn.write input
