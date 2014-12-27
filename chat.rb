@@ -95,9 +95,9 @@ if __FILE__ == $0
 
     # verifies the type of connection
     if options[:mod] == "server"
-        conn = Connection::Server.new(options[:ip], options[:port].to_i) { main(conn) }
+        Connection::Server.new(options[:ip], options[:port].to_i) {|conn| main(conn) }
     elsif options[:mod] == "client"
-        conn = Connection::Client.new(options[:ip], options[:port].to_i) { main(conn) }
+        Connection::Client.new(options[:ip], options[:port].to_i) {|conn| main(conn) }
     end
 
 end

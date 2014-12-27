@@ -9,7 +9,7 @@ module Connection
 
         def initialize
             if block_given?
-                yield
+                yield self
             else
                 Thread.new { loop { read{ |data| puts(data) } } }
                 loop { write(gets) }
@@ -17,7 +17,7 @@ module Connection
         end
 
         def write(data)
-            # @conn.puts(data)
+            @conn.puts(data)
         end
 
         def read
