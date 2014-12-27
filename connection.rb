@@ -17,7 +17,7 @@ module Connection
         end
 
         def write(data)
-            @conn.puts(data)
+            # @conn.puts(data)
         end
 
         def read

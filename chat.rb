@@ -2,15 +2,58 @@
 # encoding: utf-8
 require 'optparse'
 require './connection'
-require './chat'
+require './ui'
+
+
+
 
 
 def main(conn)
-    win = Window.new()
-    nickname = win.login
+    nickname = ""
 
-    # Thread.new { loop { puts @conn.recv 1024 } }
-    # loop { @conn.puts("#{nickname}: " << gets) }
+    UI::Dialog.new("What will be your nickname?", "Nickname: "){|answer| nickname = answer}
+
+    messages = []
+    window = nil
+
+    def write window, messages
+            total_lines = window.lines-2
+            first_line = (messages.length-total_lines) > 0 ? (messages.length-total_lines) : 0
+            window.setpos(0, 0)
+
+            messages[(first_line)..(messages.length)].each do |msg|
+                window.addstr( msg + "\n" )
+            end
+
+            window.setpos(Curses.lines-2,0)
+            window.addstr("-"*Curses.cols)
+            window.setpos(Curses.lines-1,0)
+
+            window.refresh
+    end
+
+    Thread.new do
+        if !(window.nil?)
+            loop do
+                messages << ("#{Time.now.strftime('%I:%M')} " << conn.read)
+                write window, messages
+            end
+        end
+    end
+
+    loop do
+        UI::Window.new() do |win|
+            window = win
+            write window, messages
+            input = ("#{Time.now.strftime('%I:%M')} #{nickname}: " << win.getstr)
+            messages << input
+
+            window.addstr(input)
+
+            conn.write input
+        end
+    end
+
 end
 
 
@@ -52,9 +95,9 @@ if __FILE__ == $0
 
     # verifies the type of connection
     if options[:mod] == "server"
-        conn = Connection::Server.new(options[:ip], options[:port].to_i) #{ main(conn) }
+        conn = Connection::Server.new(options[:ip], options[:port].to_i) { main(conn) }
     elsif options[:mod] == "client"
-        conn = Connection::Client.new(options[:ip], options[:port].to_i) #{ main(conn) }
+        conn = Connection::Client.new(options[:ip], options[:port].to_i) { main(conn) }
     end
 
 end
