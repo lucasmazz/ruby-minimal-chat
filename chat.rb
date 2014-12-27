@@ -25,9 +25,9 @@ def main(conn)
                 window.addstr( msg + "\n" )
             end
 
-            # window.setpos(Curses.lines-2,0)
-            # window.addstr("-"*Curses.cols)
-            # window.setpos(Curses.lines-1,0)
+            window.setpos(Curses.lines-2,0)
+            window.addstr("-"*Curses.cols)
+            window.setpos(Curses.lines-1,0)
 
             window.refresh
     end
