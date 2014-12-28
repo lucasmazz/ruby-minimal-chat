@@ -7,15 +7,6 @@ module Connection
     class Connection
         attr_accessor :nickname
 
-        # def initialize
-            # if block_given?
-            #     yield self
-            # else
-            #     Thread.new { loop { read{ |data| puts(data) } } }
-            #     loop { write(gets) }
-            # end
-        # end
-
         def write(data)
             @conn.puts data
         end

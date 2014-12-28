@@ -30,7 +30,7 @@ class Chat
         line = 0
 
         @messages[(first_line)..(@messages.length)].each do |msg|
-            # TODO: adequar as quebras de linha
+            # TODO: linebreaks
             @window.setpos(line, 0)
             @window.addstr(msg)
             line+=1
@@ -39,6 +39,7 @@ class Chat
         # draws the input division
         @window.setpos(@window.lines-2,0)
         @window.addstr("-"*@window.cols)
+
         @window.setpos(@window.lines-1,0)
         @window.addstr(@buffer)
         @window.setpos(@window.lines-1, @buffer.length)
@@ -53,15 +54,37 @@ class Chat
         # gets the message and send
         input = @window.getch
 
-        if input == 10
+        case input
+
+        # when input is enter
+        when 10
             data = "#{@nickname}: " << @buffer
             @messages << ("#{Time.now.strftime('%I:%M')} " << data)
             @connection.write data
 
             # clears the buffer after it was sent
             @buffer = ""
+
+        # when input is backspace
+        when 127
+            backspace = @buffer.split("")
+            backspace.pop
+            @buffer = backspace.join
+
+        # when input is tab
+        when 9
+            @buffer << (" "*4)
+
+        # when input is esc
+        when 27
+
+        # defult
         else
-            @buffer << input
+            if input.ord >= 32 and input.ord <= 126
+                @buffer << input
+            else
+
+            end
         end
 
     end
