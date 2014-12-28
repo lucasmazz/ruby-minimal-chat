@@ -10,6 +10,7 @@ class Chat
     def initialize connection=nil
         @connection = connection
         @messages = Array.new()
+        @buffer = ""
 
         # gets the nickname
         UI::Dialog.new("What will be your nickname?", "Nickname: ") do |nickname|
@@ -21,43 +22,48 @@ class Chat
     end
 
     def update
+        @window.clear
 
         total_lines = @window.lines-2
         first_line = (@messages.length-total_lines) > 0 ? (@messages.length-total_lines) : 0
 
-        @window.setpos(0, 0)
-
-        cont = 0
+        line = 0
 
         @messages[(first_line)..(@messages.length)].each do |msg|
-            @window.setpos(cont, 0)
+            # TODO: adequar as quebras de linha
+            @window.setpos(line, 0)
             @window.addstr(msg)
-            cont+=1
+            line+=1
         end
 
         # draws the input division
         @window.setpos(@window.lines-2,0)
         @window.addstr("-"*@window.cols)
         @window.setpos(@window.lines-1,0)
+        @window.addstr(@buffer)
+        @window.setpos(@window.lines-1, @buffer.length)
 
         @window.refresh
     end
 
     def write
-        # clears the input text
-        @window.clear
-
         # updates the screen
         update
 
         # gets the message and send
-        input = @window.getstr.chomp.strip
+        input = @window.getch
 
-        if !input.empty?
-            data = "#{@nickname}: "<< input
+        if input == 10
+            data = "#{@nickname}: " << @buffer
             @messages << ("#{Time.now.strftime('%I:%M')} " << data)
             @connection.write data
+
+            # clears the buffer after it was sent
+            @buffer = ""
+        else
+            @buffer << input
         end
+
     end
 
     def read
@@ -121,11 +127,11 @@ if __FILE__ == $0
 
     chat = Chat.new conn
 
-    Thread.new do
-        loop do
-            chat.read
-        end
-    end
+    # Thread.new do
+    #     loop do
+    #         chat.read
+    #     end
+    # end
 
     loop do
         chat.write
