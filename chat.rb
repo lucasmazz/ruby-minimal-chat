@@ -127,11 +127,11 @@ if __FILE__ == $0
 
     chat = Chat.new conn
 
-    # Thread.new do
-    #     loop do
-    #         chat.read
-    #     end
-    # end
+    Thread.new do
+        loop do
+            chat.read
+        end
+    end
 
     loop do
         chat.write
