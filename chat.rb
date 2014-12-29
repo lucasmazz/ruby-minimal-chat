@@ -27,20 +27,16 @@ class Chat
     @window.clear
 
     total_lines = @window.lines-2
-    first_line = @messages.length-total_lines-@screen_pos > 0 ? \
-                 @messages.length-total_lines-@screen_pos : 0
+    first_line = @messages.length - total_lines - @screen_pos > 0 ? \
+                 @messages.length - total_lines - @screen_pos : 0
 
     line = 0
 
-    if @messages.length > 0
-
-      @messages[(first_line)..(first_line+total_lines)].each do |msg|
-        # TODO: linebreaks
-        @window.setpos(line, 0)
-        @window.addstr(msg)
-        line+=1
-      end
-
+    @messages[(first_line)..(first_line+total_lines)].each do |msg|
+      # TODO: linebreaks
+      @window.setpos(line, 0)
+      @window.addstr(msg)
+      line+=1
     end
 
     # draws the input division
@@ -86,8 +82,8 @@ class Chat
 
     # Up arrow
     when "\e[A"
-      @screen_pos = @screen_pos + 1 <= @messages.length - @window.lines - 2 - @screen_pos? \
-                    @screen_pos + 1 : @messages.length - @window.lines - 2
+      @screen_pos = @screen_pos + 1 <= (@messages.length - @window.lines - 2 - @screen_pos)? \
+                    @screen_pos + 1 : @screen_pos
 
     # Down arrow
     when "\e[B"
