@@ -32,11 +32,15 @@ class Chat
 
     line = 0
 
-    @messages[(first_line)..(first_line+total_lines)].each do |msg|
-      # TODO: linebreaks
-      @window.setpos(line, 0)
-      @window.addstr(msg)
-      line+=1
+    if @messages.length > 0
+
+      @messages[(first_line)..(first_line+total_lines)].each do |msg|
+        # TODO: linebreaks
+        @window.setpos(line, 0)
+        @window.addstr(msg)
+        line+=1
+      end
+
     end
 
     # draws the input division
