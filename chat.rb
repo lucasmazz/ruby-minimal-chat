@@ -124,8 +124,12 @@ class Chat
     data = @connection.read
 
     if !data.chomp.strip.empty?
-      @screen_pos = 0
-      @messages << ("#{Time.now.strftime('%I:%M')} " << data)
+      data = data.split("\n")
+
+      data.each do |msg|
+        @messages << ("#{Time.now.strftime('%I:%M')} " << msg)
+      end
+
       update
     end
   end
